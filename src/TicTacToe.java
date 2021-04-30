@@ -1,136 +1,184 @@
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.Random;
+import javafx.application.Application;
+import javafx.geometry.Pos;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.Parent;
+import javafx.scene.paint.Color;
 
-import javafx.scene.Scene;
-import javafx.scene.control.Cell;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.shape.Ellipse;
-import javafx.scene.shape.Line;
-import javafx.stage.Stage;
-
-public class TicTacToe {
+public abstract class TicTacToe extends Application {
+	private boolean canContinue = true;
+	private boolean cancelBotTurn = false;
+	private Board[][] board = new Board[3][3];
+	private ArrayList<Row> rows = new ArrayList<Row>();
 	
-	private char player = 'X';
-	private Cell[][] cell = new Cell[3][3];
-	private Label state = new Label("User may go");
-	
-	public void start(Stage primaryStage) throws Exception {
-		GridPane pane = new GridPane();
+	//creates the board, establishes the rows
+	public Parent createBoard() {
+		Pane window = new Pane();
+		window.setPrefSize(600, 600);
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
-				cell[i][j] = new Cell();
-				pane.add(cell[i][j], j, i);
+				Board newBoard = new Board();
+				newBoard.setTranslateX(j * 200);
+				newBoard.setTranslateY(i * 200);
+				window.getChildren().add(newBoard);
+				board[j][i] = newBoard;
 			}
 		}
-		BorderPane borderPane = new BorderPane();
-		borderPane.setCenter(pane);
-		borderPane.setBottom(state);
-		Scene scene = new Scene(borderPane, 450, 300);
-		primaryStage.setTitle("Tic Tac Toe");
-		primaryStage.setScene(scene);
-		primaryStage.show();
+		for (int x = 0; x < 3; x++) {
+			rows.add(new Row(board[x][0], board[x][1], board[x][2]));
+		}
+		for (int y = 0; y < 3; y++) {
+			rows.add(new Row(board[0][y], board[1][y], board[2][y]));
+		}
+		rows.add(new Row(board[0][0], board[1][1], board[2][2]));
+		rows.add(new Row(board[2][0], board[1][1], board[0][2]));
+		return window;
 	}
 	
-	public boolean tieCondition1() {
+	//setup for the board to be created
+	//draws X's for user's turns and calls the bot's turn after if possible to continue the game
+	//will also call a method which checks to see if the game will continue or not
+	private class Board extends StackPane {
+		private Text text = new Text();
+		public Board() {
+			Rectangle border = new Rectangle(200, 200);
+			border.setFill(null);
+			border.setStroke(Color.BLACK);
+			text.setFont(Font.font(150));
+			setAlignment(Pos.CENTER);
+			getChildren().addAll(border, text);
+			setOnMouseClicked(event -> {
+				text.setText("X");
+				gameState();
+				if (cancelBotTurn == false) {
+					botTurn();
+					gameState();
+				}
+				cancelBotTurn = false;
+			});
+		}
+		public String getValue() {
+			return text.getText();
+		}
+	}
+	
+	//checks the game state to see if it should continue or if it should stop
+	//once it has decided to stop the game, it calls the display to inform user the game is over
+	//after it has stopped the game, it calls a method to start a new game
+	private void gameState() {
+		if (board[0][0].getValue().equals("X") || board[0][0].getValue().equals("O")) {
+			if (board[0][1].getValue().equals("X") || board[0][1].getValue().equals("O")) {
+				if (board[0][2].getValue().equals("X") || board[0][2].getValue().equals("O")) {
+					if (board[1][0].getValue().equals("X") || board[1][0].getValue().equals("O")) {
+						if (board[1][1].getValue().equals("X") || board[1][1].getValue().equals("O")) {
+							if (board[1][2].getValue().equals("X") || board[1][2].getValue().equals("O")) {
+								if (board[2][0].getValue().equals("X") || board[2][0].getValue().equals("O")) {
+									if (board[2][1].getValue().equals("X") || board[2][1].getValue().equals("O")) {
+										if (board[2][2].getValue().equals("X") || board[2][2].getValue().equals("O")) {
+											canContinue = false;
+											display();
+											startNewGame();
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		for(Row row : rows) {
+			if (row.isComplete()) {
+				canContinue = false;
+				display();
+				startNewGame();
+				break;
+			}
+		}
+	}
+	
+	//handles if there are three in a row
+		private class Row {
+			private Board[] boards;
+			public Row(Board...boards) {
+				this.boards = boards;
+			}
+			public boolean isComplete() {
+				 if (boards[0].getValue().isEmpty())
+					 return false;
+				 return boards[0].getValue().equals(boards[1].getValue()) && boards[0].getValue().equals(boards[2].getValue());
+			 }
+		}
+	
+	//displays a message informing the user that the game has ended and a new one will start
+	private void display() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Game done");
+		alert.setHeaderText(null);
+		alert.setContentText("Clearing board and restarting");
+		alert.showAndWait();
+	}
+		 
+	//used to start a new game once the current game has ended
+	private void startNewGame() {
+		canContinue = true;
+		cancelBotTurn = true;
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
-				if(cell[i][j].getInput() == ' ') {
-					return false;
-				}
+				board[i][j].text.setText("");
 			}
 		}
-		return true;
 	}
 	
-	public boolean winLoseCondition() {
-		for (int i = 0; i < 3; i++) {
-			if (cell[i][0]).getPlayer() == player && cell[i][1].getPlayer() == player && cell[i][2].getPlayer() == player) {
-				return true;
+	//method for the program's turns
+	private void botTurn() {
+		Random random = new Random();
+		boolean occupied = true;
+		while (occupied == true) {
+			int r = random.nextInt(9);
+			if (r == 0 && !(board[0][0].getValue().equals("X")) && !(board[0][0].getValue().equals("O"))) {
+				board[0][0].text.setText("O");
+				occupied = false;
 			}
-		}
-		for (int i = 0; i < 3; i++) {
-			if (cell[0][i]).getPlayer() == player && cell[1][i].getPlayer() == player && cell[2][i].getPlayer() == player) {
-				return true;
+			else if (r == 1 && !(board[0][1].getValue().equals("X")) && !(board[0][1].getValue().equals("O"))) {
+				board[0][1].text.setText("O");
+				occupied = false;
 			}
-		}
-		for (int i = 0; i < 3; i++) {
-			if (cell[0][0]).getPlayer() == player && cell[1][1].getPlayer() == player && cell[2][2].getPlayer() == player) {
-				return true;
+			else if (r == 2 && !(board[0][2].getValue().equals("X")) && !(board[0][2].getValue().equals("O"))) {
+				board[0][2].text.setText("O");
+				occupied = false;
 			}
-		}
-		for (int i = 0; i < 3; i++) {
-			if (cell[0][2]).getPlayer() == player && cell[1][1].getPlayer() == player && cell[2][0].getPlayer() == player) {
-				return true;
+			else if (r == 3 && !(board[1][0].getValue().equals("X")) && !(board[1][0].getValue().equals("O"))) {
+				board[1][0].text.setText("O");
+				occupied = false;
 			}
-		}
-		
-		return false;
-		
-	}
-	
-	public class Cell extends Pane {
-		private char player = ' ';
-		
-		public Cell() {
-			setStyle("-fx-border-color: black");
-			this.setPrefSize(300, 300);
-			this.setOnMouseClicked(e -> handleClick());
-		}
-		
-		private void handleClick() {
-			if (player == ' ' && currentPlayer != ' ') {
-				setPlayer(currentPlayer);
-				
-				if (hasWon(currentPlayer)) {
-					statusMsg.setText(currentPlayer + " won!");
-					currentPlayer = ' ';
-				}
-				else if (isBoardFull()) {
-					statusMsg.setText("Draw!");
-					currentPlayer = ' ';
-				}
-				else {
-					currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
-					statusMsg.setText(currentPlayer + " must play");
-				}
+			else if (r == 4 && !(board[1][1].getValue().equals("X")) && !(board[1][1].getValue().equals("O"))) {
+				board[1][1].text.setText("O");
+				occupied = false;
 			}
-		}
-		
-		public char getPlayer() {
-			return player;
-			
-		}
-		
-		public void setPlayer(char c) {
-			player = c;
-			
-			if (player = 'X') {
-				Line line1 = new Line(10, this.getHeight() - 10, this.getWidth() - 10, 10);
-				line1.endXProperty().bind(this.widthProperty().subtract(10));
-				line1.endYProperty().bind(this.heightProperty().subtract(10));
-				
-				Line line2 = new Line(10, 10, this.getWidth() - 10, this.getHeight() - 10);
-				line2.endXProperty().bind(this.widthProperty().subtract(10));
-				line2.endYProperty().bind(this.heightProperty().subtract(10));
-				
-				getChildren.addAll(line1, line2);
-			} else if (player == 'O') {
-				
-				Ellipse ellipse = new Ellipse(this.getWidth() / 2, this.getHeight() / 2, this.getWidth() / 2 - 10, this.getHeight() / 2 - 10);
-				ellipse.centerXProperty().bind(this.widthProperty().divide(2));
-				ellipse.centerYProperty().bind(this.heightProperty().divide(2));
-				ellipse.raidusXProperty().bind(this.widthProperty().divide(2).subtract(10));
-				ellipse.radiusYProperty().bind(this.heightProperty().divide(2).subtract(10));
-				ellipse.setStroke(Color.BLACK);
-				ellipse.setFill(Color.RED);
-				
-				getChildren().add(ellipse);
+			else if (r == 5 && !(board[1][2].getValue().equals("X")) && !(board[1][2].getValue().equals("O"))) {
+				board[1][2].text.setText("O");
+				occupied = false;
 			}
-		}
-		
-		public static void main(String[] args) {
-			launch(args);
+			else if (r == 6 && !(board[2][0].getValue().equals("X")) && !(board[2][0].getValue().equals("O"))) {
+				board[2][0].text.setText("O");
+				occupied = false;
+			}
+			else if (r == 7 && !(board[2][1].getValue().equals("X")) && !(board[2][1].getValue().equals("O"))) {
+				board[2][1].text.setText("O");
+				occupied = false;
+			}
+			else if (r == 8 && !(board[2][2].getValue().equals("X")) && !(board[2][2].getValue().equals("O"))) {
+				board[2][2].text.setText("O");
+				occupied = false;
+			}
 		}
 	}
 }
