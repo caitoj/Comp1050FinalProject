@@ -13,8 +13,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
+
 public class TicTacToe extends Application {
 	private boolean canContinue = true;
 	private boolean cancelBotTurn = false;
@@ -193,6 +192,8 @@ public class TicTacToe extends Application {
 	public static void main(String args[]) {
 		launch(args);
 	}
-//DESCRIPTION: Fully functional game of Tic-Tac-Toe. The user goes against the program which randomly selects
-//which tile to pick each turn.
+	
+//DESCRIPTION: Fully functional game of Tic-Tac-Toe. The user goes against the program which
+//randomly selects which tile to pick each turn.
+	
 }
