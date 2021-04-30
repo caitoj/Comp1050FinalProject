@@ -107,17 +107,17 @@ public class TicTacToe extends Application {
 	}
 	
 	//handles if there are three in a row
-		private class Row {
-			private Board[] boards;
-			public Row(Board...boards) {
-				this.boards = boards;
-			}
-			public boolean isComplete() {
-				 if (boards[0].getValue().isEmpty())
-					 return false;
-				 return boards[0].getValue().equals(boards[1].getValue()) && boards[0].getValue().equals(boards[2].getValue());
-			 }
+	private class Row {
+		private Board[] boards;
+		public Row(Board...boards) {
+			this.boards = boards;
 		}
+		public boolean isComplete() {
+			 if (boards[0].getValue().isEmpty())
+				 return false;
+			 return boards[0].getValue().equals(boards[1].getValue()) && boards[0].getValue().equals(boards[2].getValue());
+		 }
+	}
 	
 	//displays a message informing the user that the game has ended and a new one will start
 	private void display() {
