@@ -5,14 +5,17 @@ import javafx.geometry.Pos;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.paint.Color;
-
-public abstract class TicTacToe extends Application {
+import javafx.stage.Stage;
+import javafx.scene.Scene;
+public class TicTacToe extends Application {
 	private boolean canContinue = true;
 	private boolean cancelBotTurn = false;
 	private Board[][] board = new Board[3][3];
@@ -181,4 +184,15 @@ public abstract class TicTacToe extends Application {
 			}
 		}
 	}
+	
+	public void start(Stage primaryStage) throws Exception {
+		primaryStage.setScene(new Scene(createBoard()));
+		primaryStage.show();
+	}
+	
+	public static void main(String args[]) {
+		launch(args);
+	}
+//DESCRIPTION: Fully functional game of Tic-Tac-Toe. The user goes against the program which randomly selects
+//which tile to pick each turn.
 }
